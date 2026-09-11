@@ -1,7 +1,9 @@
-# whisper-local-server
+# whisper-cpp-adapter
 
 An OpenAI-compatible transcription endpoint backed by a local [whisper.cpp](https://github.com/ggml-org/whisper.cpp)
-build. Point any OpenAI client at it and `gpt-4o-mini-transcribe` calls run on your machine — no API key.
+build. 
+
+Point any OpenAI client at it and `gpt-4o-mini-transcribe` calls run on your machine with no API key.
 
 ## Setup
 
@@ -49,9 +51,6 @@ picks a model, and starts the server.
 (~150 MB). Later runs start immediately. Pass a port to use something other than 8000
 (`./run.sh 9000`).
 
-Use `./run.sh`, not `uvicorn` — see [HTTP/2](#http2-and-why-not-uvicorn) below if you start the
-server by hand.
-
 ### 4. Check that it works
 
 ```bash
@@ -88,7 +87,7 @@ On Windows, set the environment variables with `$env:WHISPER_CLI = "..."` instea
 
 ### Environment variables
 
-All optional — the server and `run.sh` discover these on their own. Set them to use a whisper.cpp
+All optional — the server and `run` discover these on their own. Set them to use a whisper.cpp
 build that lives somewhere else, or a different model or language.
 
 | Variable | Default |
@@ -104,10 +103,13 @@ curl http://localhost:8000/v1/audio/transcriptions \
   -F file=@recording.webm -F model=gpt-4o-mini-transcribe -F response_format=json
 ```
 
+Or just substitute `https://api.openai.com/v1/audio/transcriptions` with `http://localhost:8000/v1/audio/transcriptions` in your API backend
+
 ## The endpoint
 
-`POST /v1/audio/transcriptions`, `multipart/form-data`. Also `GET /health`, which reports whether
-the binary, model and ffmpeg were found.
+`POST /v1/audio/transcriptions`, `multipart/form-data`. 
+
+Also `GET /health`, which reports whether the binary, model and ffmpeg were found.
 
 | Field | |
 | --- | --- |
@@ -120,7 +122,7 @@ the binary, model and ffmpeg were found.
 
 ```json
 {
-  "text": "And so my fellow Americans ask not what your country can do for you...",
+  "text": "Example of your transcript text....",
   "usage": {
     "type": "tokens",
     "input_tokens": 110,
@@ -129,50 +131,6 @@ the binary, model and ffmpeg were found.
     "total_tokens": 137
   }
 }
-```
-
-## Troubleshooting
-
-A 422 means the multipart body was not what the server expected. The error message reports what
-actually arrived — match it here:
-
-| Message says | Cause | Fix |
-| --- | --- | --- |
-| `parts: ['audio']` or similar | Part is not named `file` | Name it exactly `file` |
-| `parts: none`, Content-Type not multipart | Sent as JSON | Send `multipart/form-data` |
-| `parts: ['file']` + `Expected UploadFile, received str` | Part has no filename | Give the part a filename |
-| `Missing boundary in multipart.` | Content-Type set by hand | Let the client set it |
-| `parts: none` **with** a valid boundary, plus `Unsupported upgrade request` in the log | You are running uvicorn, and the client upgraded to HTTP/2 | Start with `./run.sh` — below |
-
-A 500 naming `WHISPER_CLI` or `WHISPER_MODEL` means the build or the model was not found. Check
-`GET /health` for the paths the server is actually using, then set the variables above.
-
-### HTTP/2, and why not uvicorn
-
-This server runs on **hypercorn**. Uvicorn speaks HTTP/1.1 only: when a client asks to upgrade to
-HTTP/2 it logs `Unsupported upgrade request` and **silently discards the request body**, so a
-well-formed upload arrives with zero parts and fails as a confusing 422.
-
-Java's `HttpClient` — what Spring's `RestClient` uses by default — does exactly this, sending
-`Upgrade: h2c` on plain `http://` URLs. It never happens against the real OpenAI API, where HTTPS
-negotiates the protocol via ALPN, so it only appears against a local server.
-
-`./run.sh` uses hypercorn, which handles the upgrade correctly. If you start the server by hand,
-use `hypercorn app:app --bind 127.0.0.1:8000`.
-
-### Java / Spring: the file part
-
-A `ByteArrayResource` has no filename unless you give it one, which makes the part arrive as a
-plain text field rather than a file.
-
-```java
-ByteArrayResource audio = new ByteArrayResource(bytes) {
-    @Override public String getFilename() { return "recording.webm"; }   // required
-};
-MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-body.add("file", audio);                                                 // exact name: "file"
-body.add("model", "gpt-4o-mini-transcribe");
-body.add("response_format", "json");
 ```
 
 ## Limitations
