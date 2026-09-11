@@ -3,31 +3,99 @@
 An OpenAI-compatible transcription endpoint backed by a local [whisper.cpp](https://github.com/ggml-org/whisper.cpp)
 build. Point any OpenAI client at it and `gpt-4o-mini-transcribe` calls run on your machine — no API key.
 
-## Quick start
+## Setup
+
+### 1. Install the prerequisites
+
+Python 3.10+ and `ffmpeg` are needed to run the server. `git` and `cmake` are needed only to build
+whisper.cpp, which the setup script does for you if you don't already have a build.
+
+| | |
+| --- | --- |
+| Linux | `sudo apt install python3 python3-venv ffmpeg git cmake build-essential` |
+| macOS | `brew install python ffmpeg git cmake` |
+| Windows | `winget install Python.Python.3.12 Gyan.FFmpeg Git.Git Kitware.CMake` |
+
+On Windows, building whisper.cpp also needs [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/)
+with the "Desktop development with C++" workload. Confirm the basics are on your PATH:
 
 ```bash
-./run.sh                    # Linux/macOS: venv + deps + whisper.cpp + server on :8000
+python3 --version      # 3.10 or newer
+ffmpeg -version        # any recent build
 ```
 
-Use `./run.sh`, not `uvicorn` — see [HTTP/2](#http2-and-why-not-uvicorn) below if you start the
-server by hand.
+### 2. Get the code
+
+```bash
+git clone https://github.com/scottmac-dev/whisper-cpp-adapter.git
+cd whisper-cpp-adapter
+```
+
+### 3. Run it
+
+```bash
+./run.sh                    # Linux/macOS — venv + deps + whisper.cpp + server on :8000
+```
 
 ```powershell
 .\run.ps1                   # Windows
 ```
 
-`run` finds an existing whisper.cpp (`./whisper.cpp` or `../whisper.cpp`), picks a model, and
-builds one via `scripts/setup_whisper.*` if there is none. Override either path with `WHISPER_CLI`
-and `WHISPER_MODEL`.
+That one command does the whole setup: creates `.venv`, installs the Python dependencies, finds an
+existing whisper.cpp (`./whisper.cpp` or `../whisper.cpp`) or builds one via `scripts/setup_whisper.*`,
+picks a model, and starts the server.
 
-**Prerequisites:** Python 3.10+ and `ffmpeg`. Building whisper.cpp also needs `git` and `cmake`
-(plus Visual Studio Build Tools with the C++ workload on Windows).
+**The first run takes several minutes** — it compiles whisper.cpp and downloads the `base.en` model
+(~150 MB). Later runs start immediately. Pass a port to use something other than 8000
+(`./run.sh 9000`).
 
-| | |
+Use `./run.sh`, not `uvicorn` — see [HTTP/2](#http2-and-why-not-uvicorn) below if you start the
+server by hand.
+
+### 4. Check that it works
+
+```bash
+curl http://localhost:8000/health      # reports whether the binary, model and ffmpeg were found
+./scripts/smoke_test.sh                # end-to-end: uploads a real sample and prints the transcript
+```
+
+Interactive API docs are at <http://localhost:8000/docs>.
+
+## Manual setup
+
+`run.sh` is the short path; these are the same steps if you'd rather run them yourself, already have
+a whisper.cpp build, or are wiring the server into another tool.
+
+```bash
+# 1. Virtual environment and Python dependencies (fastapi, python-multipart, hypercorn).
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# 2. Build whisper.cpp and download a model. Skip if you already have one.
+./scripts/setup_whisper.sh          # Windows: .\scripts\setup_whisper.ps1
+                                    # optional arg picks the model: ./scripts/setup_whisper.sh tiny.en
+
+# 3. Point the server at the binary and model (paths the setup script prints at the end).
+export WHISPER_CLI=./whisper.cpp/build/bin/whisper-cli
+export WHISPER_MODEL=./whisper.cpp/models/ggml-base.en.bin
+
+# 4. Start the server.
+hypercorn app:app --bind 127.0.0.1:8000
+```
+
+On Windows, set the environment variables with `$env:WHISPER_CLI = "..."` instead of `export`.
+
+### Environment variables
+
+All optional — the server and `run.sh` discover these on their own. Set them to use a whisper.cpp
+build that lives somewhere else, or a different model or language.
+
+| Variable | Default |
 | --- | --- |
-| Linux | `sudo apt install ffmpeg git cmake build-essential` |
-| macOS | `brew install ffmpeg git cmake` |
-| Windows | `winget install Gyan.FFmpeg Git.Git Kitware.CMake` |
+| `WHISPER_CLI` | first `whisper-cli` found under `./whisper.cpp` or `../whisper.cpp` |
+| `WHISPER_MODEL` | first `ggml-*.bin` found beside that binary |
+| `WHISPER_LANGUAGE` | `en` (`auto` to detect) |
 
 ## Use it
 
@@ -63,12 +131,6 @@ the binary, model and ffmpeg were found.
 }
 ```
 
-| Variable | Default |
-| --- | --- |
-| `WHISPER_CLI` | first `whisper-cli` found under `./whisper.cpp` or `../whisper.cpp` |
-| `WHISPER_MODEL` | first `ggml-*.bin` found beside that binary |
-| `WHISPER_LANGUAGE` | `en` (`auto` to detect) |
-
 ## Troubleshooting
 
 A 422 means the multipart body was not what the server expected. The error message reports what
@@ -81,6 +143,9 @@ actually arrived — match it here:
 | `parts: ['file']` + `Expected UploadFile, received str` | Part has no filename | Give the part a filename |
 | `Missing boundary in multipart.` | Content-Type set by hand | Let the client set it |
 | `parts: none` **with** a valid boundary, plus `Unsupported upgrade request` in the log | You are running uvicorn, and the client upgraded to HTTP/2 | Start with `./run.sh` — below |
+
+A 500 naming `WHISPER_CLI` or `WHISPER_MODEL` means the build or the model was not found. Check
+`GET /health` for the paths the server is actually using, then set the variables above.
 
 ### HTTP/2, and why not uvicorn
 

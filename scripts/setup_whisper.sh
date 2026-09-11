@@ -30,4 +30,4 @@ echo
 echo "Done. Run the server with:"
 echo "  export WHISPER_CLI=$DIR/build/bin/whisper-cli"
 echo "  export WHISPER_MODEL=$DIR/models/ggml-$MODEL.bin"
-echo "  uvicorn app:app --port 8000"
+echo "  hypercorn app:app --bind 127.0.0.1:8000"
