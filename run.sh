@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 # One command to a running server: venv, dependencies, whisper.cpp discovery, launch.
-#   ./run.sh [port]        (default 8000)
+#   ./run.sh [--server] [port]        (default port 8000)
+#   --server  use the whisper-server backend, which adds verbose_json (see README "Backends")
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
-PORT="${1:-8000}"
+
+BACKEND="${WHISPER_BACKEND:-cli}"
+PORT=8000
+for arg in "$@"; do
+  case "$arg" in
+    --server) BACKEND=server ;;
+    -*) echo "unknown option: $arg (usage: ./run.sh [--server] [port])"; exit 1 ;;
+    *) PORT="$arg" ;;
+  esac
+done
 
 command -v ffmpeg >/dev/null || { echo "ffmpeg is required - see README"; exit 1; }
 
@@ -29,8 +39,24 @@ if [ -z "${WHISPER_MODEL:-}" ]; then
 fi
 [ -n "${WHISPER_MODEL:-}" ] || { echo "No model found - run ./scripts/setup_whisper.sh"; exit 1; }
 
-export WHISPER_CLI WHISPER_MODEL
-echo "cli:   $WHISPER_CLI"
-echo "model: $WHISPER_MODEL"
-echo "docs:  http://localhost:$PORT/docs"
+# whisper-server: an existing WHISPER_SERVER wins, else the one beside whisper-cli, built if missing.
+if [ "$BACKEND" = server ]; then
+  WHISPER_SERVER="${WHISPER_SERVER:-$(dirname "$WHISPER_CLI")/whisper-server}"
+  if [ ! -x "$WHISPER_SERVER" ]; then
+    build="$(cd "$(dirname "$WHISPER_CLI")" && pwd)"
+    while [ "$build" != / ] && [ ! -f "$build/CMakeCache.txt" ]; do build="$(dirname "$build")"; done
+    [ -f "$build/CMakeCache.txt" ] || { echo "whisper-server not found at $WHISPER_SERVER, and no CMake build to make it in"; exit 1; }
+    echo "Building whisper-server in $build"
+    cmake --build "$build" --config Release -j "$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)" \
+      --target whisper-server
+  fi
+  export WHISPER_SERVER
+fi
+
+export WHISPER_CLI WHISPER_MODEL WHISPER_BACKEND="$BACKEND"
+echo "backend: $BACKEND"
+echo "cli:     $WHISPER_CLI"
+if [ "$BACKEND" = server ]; then echo "server:  $WHISPER_SERVER"; fi
+echo "model:   $WHISPER_MODEL"
+echo "docs:    http://localhost:$PORT/docs"
 exec .venv/bin/hypercorn app:app --bind "127.0.0.1:$PORT"

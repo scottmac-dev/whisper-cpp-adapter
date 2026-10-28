@@ -1,0 +1,29 @@
+{
+ "task": "transcribe",
+ "language": "english",
+ "duration": 10.0,
+ "text": " you\n",
+ "segments": [
+  {
+   "id": 0,
+   "text": " you",
+   "start": 0.0,
+   "end": 2.06,
+   "tokens": [
+    345
+   ],
+   "words": [
+    {
+     "word": " you",
+     "start": 0.0,
+     "end": 2.06,
+     "t_dtw": 204,
+     "probability": 0.22806411981582642
+    }
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.4927094876766205,
+   "no_speech_prob": 0.9372243881225586
+  }
+ ]
+}

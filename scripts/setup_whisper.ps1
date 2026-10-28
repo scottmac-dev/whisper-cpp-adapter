@@ -31,7 +31,7 @@ if (-not (Test-Path $Dir)) {
 }
 
 Invoke-Checked cmake -B "$Dir\build" -S "$Dir" -DCMAKE_BUILD_TYPE=Release
-Invoke-Checked cmake --build "$Dir\build" --config Release --target whisper-cli
+Invoke-Checked cmake --build "$Dir\build" --config Release --target whisper-cli whisper-server
 
 Invoke-Checked "$Dir\models\download-ggml-model.cmd" $Model "$Dir\models"
 
@@ -44,3 +44,5 @@ Write-Host "Done. Run the server with:"
 Write-Host "  `$env:WHISPER_CLI = `"$($cli.FullName)`""
 Write-Host "  `$env:WHISPER_MODEL = `"$Dir\models\ggml-$Model.bin`""
 Write-Host "  hypercorn app:app --bind 127.0.0.1:8000"
+Write-Host ""
+Write-Host "Or just .\run.ps1 (add -Server for verbose_json, see README \"Backends\")."

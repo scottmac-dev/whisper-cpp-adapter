@@ -1,8 +1,11 @@
 # One command to a running server: venv, dependencies, whisper.cpp discovery, launch.
-#   .\run.ps1 [-Port 8000]
-param([int]$Port = 8000)
+#   .\run.ps1 [-Server] [-Port 8000]
+#   -Server  use the whisper-server backend, which adds verbose_json (see README "Backends")
+param([int]$Port = 8000, [switch]$Server)
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path -Parent $PSCommandPath)
+
+$backend = if ($Server) { "server" } elseif ($env:WHISPER_BACKEND) { $env:WHISPER_BACKEND } else { "cli" }
 
 if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) { throw "ffmpeg is required - see README" }
 
@@ -32,7 +35,25 @@ if (-not $env:WHISPER_MODEL) {
 }
 if (-not $env:WHISPER_MODEL) { throw "No model found - run .\scripts\setup_whisper.ps1" }
 
-Write-Host "cli:   $env:WHISPER_CLI"
-Write-Host "model: $env:WHISPER_MODEL"
-Write-Host "docs:  http://localhost:$Port/docs"
+# whisper-server: an existing WHISPER_SERVER wins, else the one beside whisper-cli, built if missing.
+if ($backend -eq "server") {
+    if (-not $env:WHISPER_SERVER) {
+        $env:WHISPER_SERVER = Join-Path (Split-Path -Parent $env:WHISPER_CLI) "whisper-server.exe"
+    }
+    if (-not (Test-Path $env:WHISPER_SERVER)) {
+        $build = Split-Path -Parent $env:WHISPER_CLI
+        while ($build -and -not (Test-Path (Join-Path $build "CMakeCache.txt"))) { $build = Split-Path -Parent $build }
+        if (-not $build) { throw "whisper-server.exe not found at $env:WHISPER_SERVER, and no CMake build to make it in" }
+        Write-Host "Building whisper-server in $build"
+        & cmake --build $build --config Release --target whisper-server
+        if ($LASTEXITCODE -ne 0) { throw "building whisper-server failed" }
+    }
+}
+
+$env:WHISPER_BACKEND = $backend
+Write-Host "backend: $backend"
+Write-Host "cli:     $env:WHISPER_CLI"
+if ($backend -eq "server") { Write-Host "server:  $env:WHISPER_SERVER" }
+Write-Host "model:   $env:WHISPER_MODEL"
+Write-Host "docs:    http://localhost:$Port/docs"
 & .\.venv\Scripts\hypercorn.exe app:app --bind "127.0.0.1:$Port"

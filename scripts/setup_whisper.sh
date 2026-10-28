@@ -22,7 +22,7 @@ if [ ! -d "$DIR" ]; then
 fi
 
 cmake -B "$DIR/build" -S "$DIR" -DCMAKE_BUILD_TYPE=Release
-cmake --build "$DIR/build" --config Release -j "$JOBS" --target whisper-cli
+cmake --build "$DIR/build" --config Release -j "$JOBS" --target whisper-cli whisper-server
 
 "$DIR/models/download-ggml-model.sh" "$MODEL" "$DIR/models"
 
@@ -31,3 +31,5 @@ echo "Done. Run the server with:"
 echo "  export WHISPER_CLI=$DIR/build/bin/whisper-cli"
 echo "  export WHISPER_MODEL=$DIR/models/ggml-$MODEL.bin"
 echo "  hypercorn app:app --bind 127.0.0.1:8000"
+echo
+echo "Or just ./run.sh (add --server for verbose_json, see README \"Backends\")."

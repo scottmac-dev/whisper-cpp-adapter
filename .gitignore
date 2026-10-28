@@ -1,3 +1,5 @@
 __pycache__/
 .venv/
 whisper.cpp/
+.pytest_cache/
+whisper-server.log

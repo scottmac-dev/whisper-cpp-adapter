@@ -1,0 +1,77 @@
+{
+ "task": "transcribe",
+ "language": "english",
+ "duration": 10.0,
+ "text": " [BLANK_AUDIO]\n",
+ "segments": [
+  {
+   "id": 0,
+   "text": " [BLANK_AUDIO]",
+   "start": 0.0,
+   "end": 10.0,
+   "tokens": [
+    685,
+    9148,
+    15154,
+    62,
+    48877,
+    9399,
+    60
+   ],
+   "words": [
+    {
+     "word": " [",
+     "start": 0.0,
+     "end": 0.77,
+     "t_dtw": -1,
+     "probability": 0.13737502694129944
+    },
+    {
+     "word": "BL",
+     "start": 0.77,
+     "end": 2.3000000000000003,
+     "t_dtw": -1,
+     "probability": 0.4062047302722931
+    },
+    {
+     "word": "ANK",
+     "start": 2.3000000000000003,
+     "end": 4.6000000000000005,
+     "t_dtw": -1,
+     "probability": 0.9995700120925903
+    },
+    {
+     "word": "_",
+     "start": 4.6000000000000005,
+     "end": 5.36,
+     "t_dtw": -1,
+     "probability": 0.9905643463134766
+    },
+    {
+     "word": "AUD",
+     "start": 5.36,
+     "end": 7.66,
+     "t_dtw": -1,
+     "probability": 0.9989210367202759
+    },
+    {
+     "word": "IO",
+     "start": 7.66,
+     "end": 9.19,
+     "t_dtw": -1,
+     "probability": 0.9993317127227783
+    },
+    {
+     "word": "]",
+     "start": 9.19,
+     "end": 9.99,
+     "t_dtw": -1,
+     "probability": 0.999195396900177
+    }
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.32204470038414,
+   "no_speech_prob": 0.9258810877799988
+  }
+ ]
+}

@@ -1,0 +1,239 @@
+{
+ "task": "transcribe",
+ "language": "english",
+ "duration": 16.0,
+ "text": " And so my fellow Americans ask not what your country can do\n for you, ask what you can do\n for your country.\n",
+ "segments": [
+  {
+   "id": 0,
+   "text": " And so my fellow Americans ask not what your country can do",
+   "start": 0.0,
+   "end": 11.78,
+   "tokens": [
+    843,
+    523,
+    616,
+    5891,
+    3399,
+    1265,
+    407,
+    644,
+    534,
+    1499,
+    460,
+    466
+   ],
+   "words": [
+    {
+     "word": " And",
+     "start": 0.0,
+     "end": 0.9500000000000001,
+     "t_dtw": 550,
+     "probability": 0.40575483441352844
+    },
+    {
+     "word": " so",
+     "start": 0.9500000000000001,
+     "end": 1.58,
+     "t_dtw": 574,
+     "probability": 0.9734258055686951
+    },
+    {
+     "word": " my",
+     "start": 1.58,
+     "end": 2.21,
+     "t_dtw": 610,
+     "probability": 0.7367843985557556
+    },
+    {
+     "word": " fellow",
+     "start": 2.21,
+     "end": 4.11,
+     "t_dtw": 654,
+     "probability": 0.9925387501716614
+    },
+    {
+     "word": " Americans",
+     "start": 5.33,
+     "end": 6.99,
+     "t_dtw": 700,
+     "probability": 0.8874747157096863
+    },
+    {
+     "word": " ask",
+     "start": 7.01,
+     "end": 8.700000000000001,
+     "t_dtw": 866,
+     "probability": 0.3816278874874115
+    },
+    {
+     "word": " not",
+     "start": 9.01,
+     "end": 10.44,
+     "t_dtw": 920,
+     "probability": 0.7872824668884277
+    },
+    {
+     "word": " what",
+     "start": 10.44,
+     "end": 10.68,
+     "t_dtw": 1046,
+     "probability": 0.9728773236274719
+    },
+    {
+     "word": " your",
+     "start": 10.68,
+     "end": 10.83,
+     "t_dtw": 1072,
+     "probability": 0.9809557199478149
+    },
+    {
+     "word": " country",
+     "start": 10.97,
+     "end": 11.36,
+     "t_dtw": 1118,
+     "probability": 0.9943568706512451
+    },
+    {
+     "word": " can",
+     "start": 11.36,
+     "end": 11.63,
+     "t_dtw": 1156,
+     "probability": 0.9807517528533936
+    },
+    {
+     "word": " do",
+     "start": 11.64,
+     "end": 11.78,
+     "t_dtw": 1178,
+     "probability": 0.985698938369751
+    }
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.20384356379508972,
+   "no_speech_prob": 0.05521712079644203
+  },
+  {
+   "id": 1,
+   "text": " for you, ask what you can do",
+   "start": 11.78,
+   "end": 14.52,
+   "tokens": [
+    329,
+    345,
+    11,
+    1265,
+    644,
+    345,
+    460,
+    466
+   ],
+   "words": [
+    {
+     "word": " for",
+     "start": 11.78,
+     "end": 12.040000000000001,
+     "t_dtw": 1204,
+     "probability": 0.9701802134513855
+    },
+    {
+     "word": " you",
+     "start": 12.040000000000001,
+     "end": 12.55,
+     "t_dtw": 1232,
+     "probability": 0.9736226201057434
+    },
+    {
+     "word": ",",
+     "start": 13.200000000000001,
+     "end": 13.290000000000001,
+     "t_dtw": 1232,
+     "probability": 0.4774016737937927
+    },
+    {
+     "word": " ask",
+     "start": 13.290000000000001,
+     "end": 13.46,
+     "t_dtw": 1336,
+     "probability": 0.9098818898200989
+    },
+    {
+     "word": " what",
+     "start": 13.64,
+     "end": 13.75,
+     "t_dtw": 1372,
+     "probability": 0.9887946248054504
+    },
+    {
+     "word": " you",
+     "start": 13.91,
+     "end": 14.0,
+     "t_dtw": 1398,
+     "probability": 0.9922766089439392
+    },
+    {
+     "word": " can",
+     "start": 14.0,
+     "end": 14.34,
+     "t_dtw": 1430,
+     "probability": 0.978076696395874
+    },
+    {
+     "word": " do",
+     "start": 14.34,
+     "end": 14.52,
+     "t_dtw": 1452,
+     "probability": 0.7651488184928894
+    }
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.13330183923244476,
+   "no_speech_prob": 0.0
+  },
+  {
+   "id": 2,
+   "text": " for your country.",
+   "start": 14.52,
+   "end": 15.48,
+   "tokens": [
+    329,
+    534,
+    1499,
+    13
+   ],
+   "words": [
+    {
+     "word": " for",
+     "start": 14.52,
+     "end": 14.68,
+     "t_dtw": 1476,
+     "probability": 0.9892813563346863
+    },
+    {
+     "word": " your",
+     "start": 14.68,
+     "end": 14.9,
+     "t_dtw": 1490,
+     "probability": 0.9972229599952698
+    },
+    {
+     "word": " country",
+     "start": 14.9,
+     "end": 15.290000000000001,
+     "t_dtw": 1534,
+     "probability": 0.9967494606971741
+    },
+    {
+     "word": ".",
+     "start": 15.290000000000001,
+     "end": 15.48,
+     "t_dtw": 1546,
+     "probability": 0.9137131571769714
+    }
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.021410370245575905,
+   "no_speech_prob": 0.05521712079644203
+  }
+ ]
+}
