@@ -86,6 +86,30 @@ def test_whisper_1_verbose_json_request(client, fake):
     assert fields == {"response_format": "verbose_json", "language": "en", "suppress_nst": "true"}
 
 
+def test_docs_form_request_is_accepted(client, fake):
+    """What /docs sends from its prefilled form: granularities comma-joined, optional fields blank."""
+    response = post(client, whisper_1_request(**{"timestamp_granularities[]": "word,segment"},
+                                              language="", prompt="", temperature=""))
+    assert response.status_code == 200
+    assert "words" in response.json() and "segments" in response.json()
+    _, fields = fake.calls[0]
+    assert fields == {"response_format": "verbose_json", "language": "en", "suppress_nst": "true"}
+
+
+def test_empty_granularity_value_is_ignored(client, fake):
+    response = post(client, {"response_format": "json", "timestamp_granularities[]": ""})
+    assert response.status_code == 200
+
+
+def test_docs_prefill_the_whisper_1_request_without_changing_defaults(client):
+    props = client.get("/openapi.json").json()["components"]["schemas"][
+        "Body_transcriptions_v1_audio_transcriptions_post"]["properties"]
+    assert props["model"]["examples"] == ["whisper-1"]
+    assert props["response_format"]["examples"] == ["verbose_json"]
+    assert props["timestamp_granularities[]"]["examples"] == [["word", "segment"]]
+    assert props["response_format"]["default"] == "json"
+
+
 def test_language_prompt_and_temperature_are_forwarded(client, fake):
     post(client, whisper_1_request(language="fr", prompt="Previously: hello", temperature="0.2"))
     _, fields = fake.calls[0]

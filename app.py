@@ -218,13 +218,17 @@ def health() -> dict:
 
 @app.post("/v1/audio/transcriptions")
 async def transcriptions(
+    # The examples prefill /docs ("Try it out") with the whisper-1 subtitle request, without changing
+    # the defaults a client gets when it leaves a field out, which stay OpenAI's. Blank examples keep
+    # Swagger from sending its "string" placeholder for the optional fields.
     file: UploadFile = File(...),
-    model: str = Form("gpt-4o-mini-transcribe"),  # accepted and ignored
-    response_format: str = Form("json"),
-    timestamp_granularities: list[str] = Form([], alias="timestamp_granularities[]"),
-    language: str | None = Form(None),
-    prompt: str | None = Form(None),
-    temperature: float | None = Form(None),
+    model: str = Form("gpt-4o-mini-transcribe", examples=["whisper-1"]),  # accepted and ignored
+    response_format: str = Form("json", examples=["verbose_json"]),
+    timestamp_granularities: list[str] = Form([], alias="timestamp_granularities[]",
+                                              examples=[list(verbose.GRANULARITIES)]),
+    language: str | None = Form(None, examples=[""]),
+    prompt: str | None = Form(None, examples=[""]),
+    temperature: float | None = Form(None, examples=[""]),
     authorization: str | None = Header(None),  # accepted and ignored
 ):
     if WHISPER_BACKEND == "server":
@@ -267,6 +271,9 @@ def _transcribe_with_server(server: WhisperServer, audio: bytes, filename: str |
     """The server backend: validates like OpenAI does, then reshapes whisper-server's verbose_json."""
     if response_format not in ("json", "text", "verbose_json"):
         raise OpenAIError(400, "response_format must be one of json, text, verbose_json", "response_format")
+    # Clients repeat the field per value, but /docs (Swagger UI) sends one comma-joined value, and an
+    # empty one when the list is empty.
+    granularities = [g.strip() for value in granularities for g in value.split(",") if g.strip()]
     unknown = sorted(set(granularities) - set(verbose.GRANULARITIES))
     if unknown:
         raise OpenAIError(400, f"timestamp_granularities[] must be 'word' and/or 'segment', got {unknown}",

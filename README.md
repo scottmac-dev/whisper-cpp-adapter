@@ -135,11 +135,17 @@ Also `GET /health`, which reports the backend and whether the binaries, model an
 | `file` | **Required.** Anything ffmpeg reads (`.webm`, `.mp3`, `.wav`, ...). Keep the extension on the upload. |
 | `model` | Accepted and ignored — the model is whatever `WHISPER_MODEL` points at. |
 | `response_format` | `json` (default) or `text`. `verbose_json` with the server backend. Anything else is a 400. |
-| `timestamp_granularities[]` | Server backend: `word` and/or `segment`, repeated, with `verbose_json` only (as OpenAI). The cli backend ignores it. |
+| `timestamp_granularities[]` | Server backend: `word` and/or `segment`, repeated, with `verbose_json` only (as OpenAI). A single comma-joined value (`word,segment`, as `/docs` sends it) also works. The cli backend ignores it. |
 | `language`, `prompt`, `temperature` | Server backend: passed to whisper. The cli backend ignores them. |
 | `Authorization` | Accepted and ignored. |
 
 `json` returns the OpenAI shape; `text` returns the bare transcript as `text/plain`.
+
+`http://localhost:8000/docs` → "Try it out" is prefilled with the whisper-1 subtitle request
+(`model=whisper-1`, `response_format=verbose_json`, `timestamp_granularities[]` = `word`, `segment`),
+so attaching a file and pressing Execute is enough. These are only form examples: a client that
+leaves a field out still gets OpenAI's defaults (`json`, segment granularity). With the cli backend,
+the prefilled `verbose_json` returns the 400 that points at `--server`.
 
 ```json
 {
